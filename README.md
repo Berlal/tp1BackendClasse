@@ -2,7 +2,7 @@
 
 API REST en Express et TypeScript, reliée à PostgreSQL, pour un système de jeu Pokémon simplifié (classes, dresseurs, combats).
 
-Les dresseurs et les Pokémon se créent, se lisent et se suppriment via l'API. On peut aussi apprendre une attaque, soigner, attaquer, passer à la taverne et gagner de l'expérience. Les combats entre dresseurs arrivent dans les commits suivants.
+Les dresseurs et les Pokémon se créent, se lisent et se suppriment via l'API. On peut aussi apprendre une attaque, soigner, attaquer, passer à la taverne, gagner de l'expérience et lancer un défi. Les arènes arrivent dans le commit suivant.
 
 ## Prérequis
 
@@ -59,5 +59,7 @@ Actions :
 - `POST /pokemons/:id/attacks` avec `{ "name": "Charge", "damage": 10, "usageLimit": 5 }`
 - `POST /pokemons/:id/heal`
 - `POST /pokemons/:id/attack` avec `{ "targetId": 2 }`
+- `POST /challenges/random` avec `{ "trainerAId": 1, "trainerBId": 2 }`
+- `POST /challenges/deterministic` avec `{ "trainerAId": 1, "trainerBId": 2 }`
 
 Le fichier `.env` reste sur votre machine. Seul `.env.example` est versionné.

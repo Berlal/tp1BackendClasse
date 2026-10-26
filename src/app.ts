@@ -2,6 +2,7 @@ import express from "express";
 import { DomainError } from "./domain/DomainError";
 import { NotFoundError } from "./http/NotFoundError";
 import { attackRouter } from "./routes/attacks";
+import { challengeRouter } from "./routes/challenges";
 import { pokemonRouter } from "./routes/pokemons";
 import { trainerRouter } from "./routes/trainers";
 
@@ -16,6 +17,7 @@ app.get("/health", (_req, res) => {
 app.use("/trainers", trainerRouter);
 app.use("/pokemons", pokemonRouter);
 app.use("/attacks", attackRouter);
+app.use("/challenges", challengeRouter);
 
 app.use((error: unknown, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (res.headersSent) {
