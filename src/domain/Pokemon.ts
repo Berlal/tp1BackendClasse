@@ -1,4 +1,5 @@
 import { Attack } from "./Attack";
+import { DomainError } from "./DomainError";
 import type { Trainer } from "./Trainer";
 
 export type AttackOutcome = {
@@ -19,13 +20,13 @@ export class Pokemon {
     public id: number | null = null,
   ) {
     if (name.trim() === "") {
-      throw new Error("Le nom du Pokémon est obligatoire.");
+      throw new DomainError("Le nom du Pokémon est obligatoire.");
     }
     if (!Number.isInteger(maxLifePoint) || maxLifePoint <= 0) {
-      throw new Error("Les PV maximum doivent être un entier strictement positif.");
+      throw new DomainError("Les PV maximum doivent être un entier strictement positif.");
     }
     if (!Number.isInteger(lifePoint) || lifePoint < 0 || lifePoint > maxLifePoint) {
-      throw new Error("Les points de vie sont invalides.");
+      throw new DomainError("Les points de vie sont invalides.");
     }
 
     for (const attack of attacks) {
@@ -39,10 +40,10 @@ export class Pokemon {
 
   learnAttack(attack: Attack): void {
     if (this.attacks.length >= 4) {
-      throw new Error("Un Pokémon ne peut pas apprendre plus de 4 attaques.");
+      throw new DomainError("Un Pokémon ne peut pas apprendre plus de 4 attaques.");
     }
     if (this.attacks.some((known) => known.name === attack.name)) {
-      throw new Error(`Le Pokémon connaît déjà l'attaque ${attack.name}.`);
+      throw new DomainError(`Le Pokémon connaît déjà l'attaque ${attack.name}.`);
     }
     this.attacks.push(attack);
   }
@@ -56,7 +57,7 @@ export class Pokemon {
 
   attack(target: Pokemon): AttackOutcome | null {
     if (target === this) {
-      throw new Error("Un Pokémon ne peut pas s'attaquer lui-même.");
+      throw new DomainError("Un Pokémon ne peut pas s'attaquer lui-même.");
     }
 
     const available = this.attacks.filter((attack) => attack.canUse());

@@ -1,3 +1,4 @@
+import { DomainError } from "./DomainError";
 import { Pokemon } from "./Pokemon";
 
 export class Trainer {
@@ -12,10 +13,10 @@ export class Trainer {
     public id: number | null = null,
   ) {
     if (name.trim() === "") {
-      throw new Error("Le nom du dresseur est obligatoire.");
+      throw new DomainError("Le nom du dresseur est obligatoire.");
     }
     if (!Number.isInteger(experience) || experience < 0) {
-      throw new Error("L'expérience doit être un entier positif ou nul.");
+      throw new DomainError("L'expérience doit être un entier positif ou nul.");
     }
 
     this.experience = experience;
@@ -28,10 +29,10 @@ export class Trainer {
 
   addPokemon(pokemon: Pokemon): void {
     if (this.pokemons.includes(pokemon)) {
-      throw new Error("Ce dresseur possède déjà ce Pokémon.");
+      throw new DomainError("Ce dresseur possède déjà ce Pokémon.");
     }
     if (pokemon.trainer !== null) {
-      throw new Error("Ce Pokémon appartient déjà à un dresseur.");
+      throw new DomainError("Ce Pokémon appartient déjà à un dresseur.");
     }
 
     pokemon.trainer = this;
@@ -46,7 +47,7 @@ export class Trainer {
 
   gainExperience(amount = 1): void {
     if (!Number.isInteger(amount) || amount <= 0) {
-      throw new Error("L'expérience gagnée doit être un entier strictement positif.");
+      throw new DomainError("L'expérience gagnée doit être un entier strictement positif.");
     }
 
     this.experience += amount;
