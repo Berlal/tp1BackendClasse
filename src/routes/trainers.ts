@@ -3,6 +3,7 @@ import { DomainError } from "../domain/DomainError";
 import { asyncHandler } from "../http/asyncHandler";
 import { serializeTrainer } from "../http/serialize";
 import { parseId } from "../http/parseId";
+import { pokemonRepository } from "../infrastructure/PokemonRepository";
 import { trainerRepository } from "../infrastructure/TrainerRepository";
 
 export const trainerRouter = Router();
@@ -33,6 +34,45 @@ trainerRouter.get(
   asyncHandler(async (req, res) => {
     const trainer = await trainerRepository.findById(parseId(req.params.id));
     res.json(serializeTrainer(trainer));
+  }),
+);
+
+trainerRouter.post(
+  "/:id/pokemons",
+  asyncHandler(async (req, res) => {
+    const pokemonId = req.body?.pokemonId;
+    if (!Number.isInteger(pokemonId)) {
+      throw new DomainError("L'identifiant du Pokémon est obligatoire.");
+    }
+
+    const trainer = await trainerRepository.findById(parseId(req.params.id));
+    const pokemon = await pokemonRepository.findById(pokemonId);
+    trainer.addPokemon(pokemon);
+    await pokemonRepository.save(pokemon);
+    const saved = await trainerRepository.findById(trainer.id as number);
+    res.json(serializeTrainer(saved));
+  }),
+);
+
+trainerRouter.post(
+  "/:id/tavern",
+  asyncHandler(async (req, res) => {
+    const trainer = await trainerRepository.findById(parseId(req.params.id));
+    trainer.healAll();
+    await pokemonRepository.saveAll(trainer.pokemons);
+    const saved = await trainerRepository.findById(trainer.id as number);
+    res.json(serializeTrainer(saved));
+  }),
+);
+
+trainerRouter.post(
+  "/:id/experience",
+  asyncHandler(async (req, res) => {
+    const amount = req.body?.amount === undefined ? 1 : req.body.amount;
+    const trainer = await trainerRepository.findById(parseId(req.params.id));
+    trainer.gainExperience(amount);
+    const saved = await trainerRepository.save(trainer);
+    res.json(serializeTrainer(saved));
   }),
 );
 

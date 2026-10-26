@@ -1,3 +1,4 @@
+import { DomainError } from "../domain/DomainError";
 import { Trainer } from "../domain/Trainer";
 import { NotFoundError } from "../http/NotFoundError";
 import { isPrismaNotFound, prisma } from "./prisma";
@@ -43,6 +44,29 @@ export class TrainerRepository {
       throw new NotFoundError("Dresseur introuvable.");
     }
     return toTrainer(row);
+  }
+
+  async save(trainer: Trainer): Promise<Trainer> {
+    if (trainer.id === null) {
+      throw new DomainError("Le dresseur doit être enregistré avant d'être modifié.");
+    }
+
+    try {
+      await prisma.trainer.update({
+        where: { id: trainer.id },
+        data: {
+          level: trainer.level,
+          experience: trainer.experience,
+        },
+      });
+    } catch (error) {
+      if (isPrismaNotFound(error)) {
+        throw new NotFoundError("Dresseur introuvable.");
+      }
+      throw error;
+    }
+
+    return this.findById(trainer.id);
   }
 
   async delete(id: number): Promise<void> {

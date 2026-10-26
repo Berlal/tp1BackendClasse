@@ -1,7 +1,11 @@
+import type { Prisma, PrismaClient } from "@prisma/client";
+import { DomainError } from "../domain/DomainError";
 import { Pokemon } from "../domain/Pokemon";
 import { NotFoundError } from "../http/NotFoundError";
 import { attachTrainer, toPokemon } from "./mappers";
-import { isPrismaNotFound, prisma } from "./prisma";
+import { isPrismaNotFound, isPrismaUnique, prisma } from "./prisma";
+
+type Db = PrismaClient | Prisma.TransactionClient;
 
 const includeAttacks = {
   attacks: { orderBy: { id: "asc" as const } },
@@ -39,6 +43,69 @@ export class PokemonRepository {
       throw new NotFoundError("Pokémon introuvable.");
     }
     return attachTrainer(toPokemon(row), row.trainer);
+  }
+
+  async save(pokemon: Pokemon): Promise<Pokemon> {
+    await this.persist(prisma, pokemon);
+    return this.findById(pokemon.id as number);
+  }
+
+  async saveAll(pokemons: Pokemon[]): Promise<void> {
+    await prisma.$transaction(async (tx) => {
+      for (const pokemon of pokemons) {
+        await this.persist(tx, pokemon);
+      }
+    });
+  }
+
+  private async persist(db: Db, pokemon: Pokemon): Promise<void> {
+    if (pokemon.id === null) {
+      throw new DomainError("Le Pokémon doit être enregistré avant d'être modifié.");
+    }
+
+    try {
+      await db.pokemon.update({
+        where: { id: pokemon.id },
+        data: {
+          lifePoint: pokemon.lifePoint,
+          trainerId: pokemon.trainer?.id ?? null,
+        },
+      });
+    } catch (error) {
+      if (isPrismaNotFound(error)) {
+        throw new NotFoundError("Pokémon introuvable.");
+      }
+      throw error;
+    }
+
+    for (const attack of pokemon.attacks) {
+      if (attack.id === null) {
+        try {
+          const created = await db.attack.create({
+            data: {
+              name: attack.name,
+              damage: attack.damage,
+              usageLimit: attack.usageLimit,
+              usageCount: attack.usageCount,
+              pokemonId: pokemon.id,
+            },
+          });
+          attack.id = created.id;
+          attack.pokemonId = pokemon.id;
+        } catch (error) {
+          if (isPrismaUnique(error)) {
+            throw new DomainError(`Le Pokémon connaît déjà l'attaque ${attack.name}.`);
+          }
+          throw error;
+        }
+        continue;
+      }
+
+      await db.attack.update({
+        where: { id: attack.id },
+        data: { usageCount: attack.usageCount },
+      });
+    }
   }
 
   async delete(id: number): Promise<void> {
