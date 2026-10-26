@@ -7,7 +7,7 @@ Ce dépôt correspond à la première étape : le serveur répond sur `GET /heal
 ## Prérequis
 
 - Node.js 18 ou plus récent
-- PostgreSQL installé dans WSL (pas de Docker)
+- PostgreSQL installé dans WSL
 
 ## Installer PostgreSQL
 

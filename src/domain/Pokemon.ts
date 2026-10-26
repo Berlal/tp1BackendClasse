@@ -1,4 +1,5 @@
 import { Attack } from "./Attack";
+import type { Trainer } from "./Trainer";
 
 export type AttackOutcome = {
   attackName: string;
@@ -8,6 +9,7 @@ export type AttackOutcome = {
 
 export class Pokemon {
   readonly attacks: Attack[] = [];
+  trainer: Trainer | null = null;
 
   constructor(
     public readonly name: string,
